@@ -1,0 +1,48 @@
+1、开始前
+sudo su -c "grep '^deb ' /etc/apt/sources.list | sed 's/^deb/deb-src/g' > /etc/apt/sources.list.d/deb-src.list"
+sudo apt update
+sudo apt install devscripts
+
+2.使用Raspbian Buster中的 gpio-ir补丁进行安装：
+
+sudo apt install dh-exec doxygen expect libasound2-dev libftdi1-dev libsystemd-dev libudev-dev libusb-1.0-0-dev libusb-dev man2html-base portaudio19-dev socat xsltproc python3-yaml
+mkdir build
+cd build
+apt source lirc
+wget https://raw.githubusercontent.com/neuralassembly/raspi/master/lirc-gpio-ir-0.10.patch
+patch -p0 -i lirc-gpio-ir-0.10.patch
+cd lirc-0.10.1
+debuild -uc -us -b
+cd ..
+sudo apt install ./liblirc0_0.10.1-5.2_armhf.deb ./liblircclient0_0.10.1-5.2_armhf.deb ./lirc_0.10.1-5.2_armhf.deb 
+#----------------------------------------------------------------------------------------------------------------------
+最终安装命令将失败。然后请首先配置下面显示的文件，即/boot/config.txt和/etc/lirc/lirc_options.conf。
+之后，请再次尝试最终安装命令。然后安装将成功。
+
+3.安装后：
+    请将以下行添加到/boot/config.txt。
+sudo nano /boot/config.txt
+#----------------------------------------------------------------------------------------------------------------------
+dtoverlay=gpio-ir,gpio_pin=23
+dtoverlay=gpio-ir-tx,gpio_pin=22
+#----------------------------------------------------------------------------------------------------------------------
+    应编辑/etc/lirc/lirc_options.conf。当您使用Raspbian Buster时，请首先执行以下命令。
+#----------------------------------------------------------------------------------------------------------------------
+sudo cp /etc/lirc/lirc_options.conf.dist /etc/lirc/lirc_options.conf
+
+在程序案例的23讲红外遥控实验把lircd.conf 传到pi目录下；
+
+sudo cp lircd.conf /etc/lirc/lircd.conf
+#----------------------------------------------------------------------------------------------------------------------
+    请按如下方式编辑/etc/lirc/lirc_options.conf。
+sudo nano /etc/lirc/lirc_options.conf
+#----------------------------------------------------------------------------------------------------------------------
+driver = default
+device = /dev/lirc1
+#----------------------------------------------------------------------------------------------------------------------
+编辑后，如果您使用的是Raspbian Buster，请在此处再次执行最终安装命令。然后安装将成功。
+
+4、测试
+输入
+irw   
+回车后，遥控器对着红外接收头按遥控上的按键会弹出信息说明安装成功；
